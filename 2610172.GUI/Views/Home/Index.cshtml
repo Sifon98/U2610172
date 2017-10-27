@@ -1,0 +1,72 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+@section Scripts{
+    <script>
+
+        var model = {
+            Products: ko.observableArray(),
+            addform: {
+                name: ko.observable(""),
+                event: ko.observable("")
+            }
+        };
+
+        function sendAjaxRequestHelper(httpMethod, callback, url, postData) {
+            $.ajax("http://localhost:60000/api/booking" + (url ? "/" + url : ""),
+                {
+                    type: httpMethod, success: callback, data: postData
+                });
+        };
+
+        function getAllItems() {
+            sendAjaxRequestHelper("GET", function (data) {
+                model.Products.removeAll();
+                for (var i = 0; i < data.length; i++) {
+                    model.Products.push(data[i]);
+                }
+            });
+        };
+
+        function removeItem(item) {
+            sendAjaxRequestHelper("DELETE", function () {
+
+                for (var i = 0; i < model.Products().length; i++) {
+                    if (model.Products()[i].ID == item.id) {
+                        model.Products.remove(model.Products()[i]);
+                        break;
+                    }
+                }
+            }, item.ID)
+        };
+
+        $(document).ready(function () {
+            getAllItems();
+            ko.applyBindings(model); //här sker magin!
+        });
+
+    </script>
+
+}
+
+@section Body{
+    <table>
+        <thead><tr><th>Event</th><th>Place</th><th>DateTime</th><th>Name</th></tr></thead>
+        <tbody data-bind="foreach: model.Products">
+            <tr>
+                <td data-bind="text: Event"></td>
+                <td data-bind="text: Place"></td>
+                <td data-bind="text: DateTime"></td>
+                <td data-bind="text: Name"></td>
+                <td>
+                    <button data-bind="click: removeItem">Remove</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <hr />
+}
+
